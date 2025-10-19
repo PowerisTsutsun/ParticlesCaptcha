@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Login + Particle CAPTCHA</title>
+    <style>
+      /* 1. Added modern box-sizing reset */
+      * {
+        box-sizing: border-box;
+      }
+      
+      body { 
+        font-family: system-ui, Arial, sans-serif; 
+        background: #0e0e10; 
+        color: #eaeaea; 
+      }
+      
+      .card { 
+        max-width: 460px; 
+        margin: 48px auto; 
+        background: #1b1b1f; 
+        padding: 24px; 
+        border-radius: 12px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,.25);
+      }
+      
+      /* Base styles for inputs and buttons */
+      input, button { 
+        padding: 10px 12px; 
+        border-radius: 8px; 
+        border: 1px solid #333; 
+        background: #111; 
+        color: #eaeaea;
+        font-size: 1rem; /* Added for consistent font size */
+        width: 100%; /* Default to full width */
+      }
+      
+      /* 2. Made labels stack nicely */
+      label {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      /* 2. Replaced first spacer div */
+      input[name="password"] {
+        margin-bottom: 16px;
+      }
+
+      button { 
+        background: #3a86ff; 
+        border: none; 
+        margin-top: 8px; 
+        cursor: pointer; 
+      }
+      
+      /* 3. Made image responsive and added spacing */
+      img { 
+        border-radius: 8px; 
+        display: block;
+        max-width: 100%;
+        height: auto;
+        margin-bottom: 8px; /* 2. Added space below image */
+      }
+      
+      .row { 
+        display: flex; 
+        gap: 12px; 
+      }
+      
+      /* 4. Fixed the input/button row */
+      .row input {
+        flex: 1; /* Make input grow */
+        width: auto; /* Override 100% width */
+      }
+      .row button {
+        width: auto; /* Override 100% width */
+      }
+      
+      /* 2. Replaced second spacer div */
+      button[type="submit"] {
+        margin-top: 16px;
+      }
+
+      .muted { 
+        color: #9aa0a6; 
+        font-size: 12px; 
+      }
+      
+      .flash { 
+        margin-bottom: 10px; 
+        padding: 8px 10px; 
+        border-radius: 8px; 
+      }
+      .flash.error { background: #2c0f12; color: #ffb4b4; }
+      .flash.success { background: #0f2c14; color: #b4ffcc; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2>Login</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form action="{{ url_for('do_login') }}" method="POST">
+        <label>Username</label>
+        <input name="username" required>
+
+        <label>Password</label>
+        <input name="password" type="password" required>
+
+        <label>Prove you're human: How many glowing particles?</label>
+        <img id="captcha-img" src="" alt="CAPTCHA" width="400" height="300">
+        
+        <div class="row">
+          <input id="guess" name="guess" placeholder="Enter the number" required>
+          <button type="button" id="refresh">Refresh</button>
+        </div>
+        <input type="hidden" id="captcha_id" name="captcha_id">
+
+        <button type="submit">Sign in</button>
+
+        <p class="muted">Tip: demo/demo123 will “log in” when CAPTCHA passes.</p>
+      </form>
+    </div>
+
+    <script>
+      async function loadCaptcha() {
+        const resp = await fetch("{{ url_for('particle_captcha.captcha_image') }}", { cache: "no-store" });
+        document.getElementById("captcha-img").src = URL.createObjectURL(await resp.blob());
+        document.getElementById("captcha_id").value = resp.headers.get("X-Captcha-ID");
+      }
+      document.getElementById("refresh").addEventListener("click", loadCaptcha);
+      loadCaptcha(); // initial
+    </script>
+  </body>
+</html>
