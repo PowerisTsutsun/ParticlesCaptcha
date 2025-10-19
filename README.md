@@ -192,4 +192,4 @@ Flask | Python | Cybersecurity | Embedded Systems Enthusiast
 
 ## 📜 License
 
-MIT License. If the repository doesn’t include a `LICENSE` file yet, you can add one with the standard MIT text.
+MIT License. If the repository doesn’t include a `LICENSE` file yet.
